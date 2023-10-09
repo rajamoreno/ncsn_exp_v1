@@ -7,9 +7,13 @@ export function Introduction({ next }) {
   const player = usePlayer();
 
   function onClick(generosity) {
-    console.log("you chose to contribute:", generosity);
-    player.set("generosity", generosity);
+    console.log("player generosity:", generosity);
+    // scales the player's button press to a value in the range [0, 0.1, 0.2, ... 0.9, 1]
+    const traitA = generosity / 10;
+    // sets this as traitA for access when constructing the game network.
+    player.set("traitA", traitA);
     // player.set("submit", true);
+    console.log("player traitA:", traitA);
 }
 
   return (

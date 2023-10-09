@@ -33,9 +33,10 @@ Empirica.onGameStart(({ game }) => {
   //       which we should set by reference from the game config file
 
   // scores for participants in the "a" (target) behavior
+  // as described in Dannals et al.
   var peopleTraitA = [];
   for (let i = 0; i < len; i+=1) {
-    peopleTraitA[i] = players[i].get("generosity");
+    peopleTraitA[i] = players[i].get("traitA");
   }
 
   // console.log("peopleTraitA: ", peopleTraitA);
@@ -111,18 +112,27 @@ Empirica.onStageEnded(({ stage }) => {
 
   // if the stage is result, we update all the scoring.
   // this portion will need to be updated pretty substantially to reflect
-  // the new network adjacency matrix. 
+  // the new network adjacency matrix.
+  console.log("starting scoring process...")
 
   const players = stage.currentGame.players;
   const numPlayers = players.length;
+  console.log("number of players:");
+  console.log(numPlayers);
   // updating this function to support scoring across several opponents
   for (const player of players) {
+    console.log("current player id:");
+    console.log(player.id);
     // updated (but untested) -- for filtering opponents out of big network
     const opponents = players.filter((p) => network[player.index][p.index] == 1);
     const playerContribution = player.round.get("contribution");
-    const opponentContributions = 0;
+    var opponentContributions = 0;
     for (const opponent of opponents) {
+      console.log("current opponent id:");
+      console.log(opponent.id);
       opponentContributions = opponentContributions + opponent.round.get("contribution");
+      console.log("running opponent contribution total:");
+      console.log(opponentContributions);
     }
     // score assumes the pot DOUBLES the amount of money contributed to it
     // tbis value should be in the game config file though, so work on that
