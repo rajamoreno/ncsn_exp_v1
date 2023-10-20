@@ -108,7 +108,7 @@ Empirica.onStageStart(({ stage }) => {});
 
 Empirica.onStageEnded(({ stage }) => {
 
-  if (stage.get("name") !== "choice") return;
+  if (stage.get("name") !== "Choice") return;
 
   // if the stage is result, we update all the scoring.
   // this portion will need to be updated pretty substantially to reflect
@@ -123,7 +123,7 @@ Empirica.onStageEnded(({ stage }) => {
   for (const player of players) {
     console.log("current player id:");
     console.log(player.id);
-    // updated (but untested) -- for filtering opponents out of big network
+    // updated for filtering opponents out of big network
     const opponents = players.filter((p) => network[player.index][p.index] == 1);
     const playerContribution = player.round.get("contribution");
     var opponentContributions = 0;
@@ -134,18 +134,19 @@ Empirica.onStageEnded(({ stage }) => {
       console.log("running opponent contribution total:");
       console.log(opponentContributions);
     }
-    // score assumes the pot DOUBLES the amount of money contributed to it
-    // tbis value should be in the game config file though, so work on that
-    let score = ((2 * (playerContribution + opponentContributions)) / numPlayers);
-    player.round.set("score", score);
+    player.round.set("opponentContributions", opponentContributions);
+    // roundWinnings assumes the pot DOUBLES the amount of money contributed to it
+    // this value should be in the game config file though, so work on that
+    let roundWinnings = ((2 * (playerContribution + opponentContributions)) / numPlayers);
+    player.round.set("roundWinnings", roundWinnings);
     // pulls score attribute of player
     const currentScore = player.get("score") || 0;
-    // sets their score as:
+    // sets their total score as:
     //    initial endowment (set by default to 10)
     //  - their contribution 
     //  + their individual winnings from the round 
     //  + their current running total
-    player.set("score", 10 - playerCont + score + currentScore);
+    player.set("score", 10 - playerContribution + roundWinnings + currentScore);
   }
 
 });
