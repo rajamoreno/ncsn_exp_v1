@@ -8,6 +8,7 @@ export function Choice() {
     const player = usePlayer();
 
     function onClick(contribution) {
+        console.log("player name:", player.get("name"));
         console.log("you chose to contribute:", contribution);
         player.round.set("contribution", contribution);
         player.stage.set("submit", true);

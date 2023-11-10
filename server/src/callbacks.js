@@ -1,11 +1,18 @@
 import { ClassicListenersCollector } from "@empirica/core/admin/classic";
-import { usePlayer, usePlayers } from "@empirica/core/player/classic/react";
+// import { usePlayer, usePlayers } from "@empirica/core/player/classic/react";
+const { shuffle } = require("simple-statistics");
+
 export const Empirica = new ClassicListenersCollector();
 
 Empirica.onGameStart(({ game }) => {
 
+  console.log("starting game...");
+
   const treatment = game.get("treatment");
-  const numRounds = treatment;
+
+  console.log("retrieved treatment...");
+
+  console.log(treatment);
 
   for (let i = 0; i < treatment.numRounds; i++) {
     const round = game.addRound({
@@ -13,16 +20,21 @@ Empirica.onGameStart(({ game }) => {
     })
     round.addStage({name: "choice", duration:10000});
     round.addStage({name: "result", duration:10000});
+    console.log("added round ", i, " ...");
   }
+  console.log("made it through adding rounds...");
 
-  const player = usePlayer();
-  const players = usePlayers();
+  const players = game.players;
+  console.log("successfully got players...");
+
   var len = players.length;
+  console.log("successfully retrieved number of players...");
   console.log("Number of participants: ", len);
 
   // this tags each player with an index variable
   for (let i = 0; i < len; i+=1) {
-    player.set("index", i);
+    players[i].set("index", i);
+    console.log("successfully tagged player ", i, " with an index...");
   }
 
   // len is the number of participants in the game.
@@ -45,7 +57,7 @@ Empirica.onGameStart(({ game }) => {
   // console.log("peopleTraitB: ", peopleTraitB);
 
   // we now set values for homophily and acrophily
-  var homophily = 0;
+  var homophily = 0.8;
   var acrophily = 0.8;
   var network = [];
 
@@ -97,8 +109,26 @@ Empirica.onGameStart(({ game }) => {
     }
   }
 
+  // we set all the diagonal entries equal to 0 so we can filter opponents more easily
+  for (let i = 0; i < len; i++) {
+    for (let j = 0; j < len; j++) {
+      if (i == j) {
+        network[i][j] = 0;
+      }
+    }
+  }
+
   // now we set the network as an attribute of the game so we can access it everywhere
   game.set("network", network);
+
+  // checking we stored it correctly
+  networkCheck = game.get("network");
+
+  // comparison:
+  console.log("network:");
+  console.log(network);
+  console.log("networkCheck:");
+  console.log(networkCheck);
   
 });
 
@@ -108,23 +138,28 @@ Empirica.onStageStart(({ stage }) => {});
 
 Empirica.onStageEnded(({ stage }) => {
 
-  if (stage.get("name") !== "Choice") return;
+  console.log("checking stage name...");
+  console.log("stage name is ", stage.get("name"));
+
+  if (stage.get("name") !== "choice") return;
 
   // if the stage is result, we update all the scoring.
-  // this portion will need to be updated pretty substantially to reflect
-  // the new network adjacency matrix.
+
   console.log("starting scoring process...")
 
   const players = stage.currentGame.players;
   const numPlayers = players.length;
   console.log("number of players:");
   console.log(numPlayers);
-  // updating this function to support scoring across several opponents
   for (const player of players) {
-    console.log("current player id:");
-    console.log(player.id);
+    console.log("current player id:", player.id);
+    console.log("current player name:", player.get("name"));
+    network = stage.currentGame.get("network");
+    console.log("network: ", network);
     // updated for filtering opponents out of big network
-    const opponents = players.filter((p) => network[player.index][p.index] == 1);
+    const opponents = players.filter((p) => network[player.get("index")][p.get("index")] == 1);
+    const numOpponents = opponents.length;
+    console.log("numOpponents", numOpponents);
     const playerContribution = player.round.get("contribution");
     var opponentContributions = 0;
     for (const opponent of opponents) {
@@ -135,18 +170,22 @@ Empirica.onStageEnded(({ stage }) => {
       console.log(opponentContributions);
     }
     player.round.set("opponentContributions", opponentContributions);
+    console.log("opponentContributions:", opponentContributions);
     // roundWinnings assumes the pot DOUBLES the amount of money contributed to it
     // this value should be in the game config file though, so work on that
-    let roundWinnings = ((2 * (playerContribution + opponentContributions)) / numPlayers);
+    let roundWinnings = ((2 * (playerContribution + opponentContributions)) / (1 + numOpponents ));
     player.round.set("roundWinnings", roundWinnings);
+    console.log("roundWinnings:", roundWinnings);
     // pulls score attribute of player
     const currentScore = player.get("score") || 0;
+    console.log("currentScore", currentScore);
     // sets their total score as:
     //    initial endowment (set by default to 10)
     //  - their contribution 
     //  + their individual winnings from the round 
     //  + their current running total
     player.set("score", 10 - playerContribution + roundWinnings + currentScore);
+    console.log("score:", player.get("score"));
   }
 
 });

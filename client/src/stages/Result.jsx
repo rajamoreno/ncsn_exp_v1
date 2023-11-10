@@ -13,7 +13,7 @@ export function Result() {
             <p>Your opponents contributed: {player.round.get("opponentContributions")} token(s)</p>
             <br />
             <p>You got {player.round.get("roundWinnings")} token(s) from the collective pot.</p>
-            <p>You now have a total of {player.get("score")} token(s) this round.</p>
+            <p>You now have a TOTAL of {player.get("score")} token(s) this round.</p>
             <br />
             <Button handleClick={() => player.stage.set("submit", true)}>
                 Play Again!

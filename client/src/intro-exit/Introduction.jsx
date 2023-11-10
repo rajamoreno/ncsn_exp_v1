@@ -14,7 +14,7 @@ export function Introduction({ next }) {
     player.set("traitA", traitA);
     // player.set("submit", true);
     console.log("player traitA:", traitA);
-}
+  }
 
   return (
     <div className="mt-3 sm:mt-5 p-20">
