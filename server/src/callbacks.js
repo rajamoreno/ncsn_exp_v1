@@ -6,11 +6,11 @@ export const Empirica = new ClassicListenersCollector();
 
 Empirica.onGameStart(({ game }) => {
 
-  console.log("starting game...");
+  console.log("Starting game...");
 
   const treatment = game.get("treatment");
 
-  console.log("retrieved treatment...");
+  console.log("Retrieved treatment...");
 
   console.log(treatment);
 
@@ -20,21 +20,135 @@ Empirica.onGameStart(({ game }) => {
     })
     round.addStage({name: "choice", duration:10000});
     round.addStage({name: "result", duration:10000});
-    console.log("added round ", i, " ...");
+    console.log("Added round ", i, "...");
   }
-  console.log("made it through adding rounds...");
+  console.log("All rounds added...");
 
   const players = game.players;
-  console.log("successfully got players...");
+  console.log("Successfully retrieved players...");
 
   var len = players.length;
-  console.log("successfully retrieved number of players...");
-  console.log("Number of participants: ", len);
+  console.log("Successfully calculated number of players...");
+  console.log("Number of players: ", len);
 
-  // this tags each player with an index variable
+  // array of 100 wild animal names for anonymous player identification.
+  // note that this implies you should *NEVER* play this game with more than 100 people.
+  const wildAnimals = [
+    "Lion",
+    "Tiger",
+    "Elephant",
+    "Giraffe",
+    "Zebra",
+    "Cheetah",
+    "Gorilla",
+    "Kangaroo",
+    "Koala",
+    "Panda",
+    "Polar Bear",
+    "Grizzly Bear",
+    "Brown Bear",
+    "Black Bear",
+    "Wolf",
+    "Fox",
+    "Coyote",
+    "Deer",
+    "Moose",
+    "Elk",
+    "Antelope",
+    "Bison",
+    "Hare",
+    "Rabbit",
+    "Squirrel",
+    "Chipmunk",
+    "Raccoon",
+    "Skunk",
+    "Opossum",
+    "Beaver",
+    "Otter",
+    "Hedgehog",
+    "Badger",
+    "Bat",
+    "Flying Fox",
+    "Chimpanzee",
+    "Bonobo",
+    "Orangutan",
+    "Gibbon",
+    "Lemur",
+    "Red Panda",
+    "Ring-tailed Lemur",
+    "Fossa",
+    "Jaguar",
+    "Leopard",
+    "Panther",
+    "Snow Leopard",
+    "Lynx",
+    "Bobcat",
+    "Mountain Lion",
+    "African Elephant",
+    "African Buffalo",
+    "Rhinoceros",
+    "Hippopotamus",
+    "Warthog",
+    "Giraffe",
+    "Okapi",
+    "Gorilla",
+    "Chimpanzee",
+    "Baboon",
+    "Mandrill",
+    "Capybara",
+    "Tapir",
+    "Sloth",
+    "Armadillo",
+    "Aardvark",
+    "Pangolin",
+    "Crocodile",
+    "Alligator",
+    "Komodo Dragon",
+    "Monitor Lizard",
+    "Turtle",
+    "Tortoise",
+    "Snake",
+    "Cobra",
+    "Python",
+    "Boa Constrictor",
+    "Eagle",
+    "Hawk",
+    "Falcon",
+    "Owl",
+    "Penguin",
+    "Albatross",
+    "Pelican",
+    "Seagull",
+    "Swan",
+    "Duck",
+    "Goose",
+    "Hummingbird",
+    "Parrot",
+    "Toucan",
+    "Puffin",
+    "Blue Jay",
+    "Cardinal",
+    "Woodpecker",
+    "Sparrow",
+    "Finch",
+    "Robin",
+    "Magpie",
+    "Crow"
+  ];
+
+  // this loop does three things for each player: 
+  // (1) it tags each player with an index variable
+  // (2) it assigns each player an animal name.
+  // (3) it sets a default "lastContribution" value, in case they are unable to
+  //     complete the intro steps.
+  
   for (let i = 0; i < len; i+=1) {
     players[i].set("index", i);
-    console.log("successfully tagged player ", i, " with an index...");
+    console.log("Successfully tagged player ", i, " with an index...");
+    players[i].set("animalName", wildAnimals[i]);
+    console.log("Successfully set ", wildAnimals[i], " as the animal name of player ", i, "...");
+    // IMPORTANT: the default contribution amount is set to 5, but THIS IS MUTABLE
+    players[i].set("lastContribution", 5);
   }
 
   // len is the number of participants in the game.
@@ -52,7 +166,7 @@ Empirica.onGameStart(({ game }) => {
   }
 
   // console.log("peopleTraitA: ", peopleTraitA);
-  // we select trait b from the shuffled array for trait a
+  // we select trait b from a random permutation of the array for trait a
   var peopleTraitB = shuffle(peopleTraitA);
   // console.log("peopleTraitB: ", peopleTraitB);
 
@@ -134,58 +248,132 @@ Empirica.onGameStart(({ game }) => {
 
 Empirica.onRoundStart(({ round }) => {});
 
-Empirica.onStageStart(({ stage }) => {});
-
-Empirica.onStageEnded(({ stage }) => {
-
-  console.log("checking stage name...");
-  console.log("stage name is ", stage.get("name"));
+Empirica.onStageStart(({ stage }) => {
 
   if (stage.get("name") !== "choice") return;
 
-  // if the stage is result, we update all the scoring.
+  // if the stage that is beginning now is choice, we add default values
+  // for all player contributions. these values are 
 
-  console.log("starting scoring process...")
+  console.log("Starting default score setting process...")
 
   const players = stage.currentGame.players;
   const numPlayers = players.length;
-  console.log("number of players:");
-  console.log(numPlayers);
+
+  console.log("Number of players: ", numPlayers);
+  
   for (const player of players) {
-    console.log("current player id:", player.id);
-    console.log("current player name:", player.get("name"));
+
+    // log the player's identifying info
+    console.log("");
+    console.log("-----");
+    console.log("Player ID: ", player.id);
+    console.log("Player Animal Name: ", player.get("animalName"));
+
+    console.log("Setting default contribution amount to lastContribution... ");
+    player.round.set("contribution", player.get("lastContribution"));
+
+
+  }
+
+});
+
+Empirica.onStageEnded(({ stage }) => {
+
+  console.log("Checking stage name...");
+  console.log("Stage name is ", stage.get("name"));
+
+  if (stage.get("name") !== "choice") return;
+
+  // if the stage that just ended was choice, we update all the scoring.
+
+  console.log("Starting scoring process...")
+
+  const players = stage.currentGame.players;
+  const numPlayers = players.length;
+
+  console.log("Number of players: ", numPlayers);
+
+  for (const player of players) {
+
+    // log the player's identifying info
+    console.log("");
+    console.log("-----");
+    console.log("Player ID: ", player.id);
+    console.log("Player Animal Name: ", player.get("animalName"));
+
+    // grab the global network
     network = stage.currentGame.get("network");
-    console.log("network: ", network);
-    // updated for filtering opponents out of big network
+    // console.log("network: ", network);
+
+    // filter the network to only include other players that are adjacent to the player
     const opponents = players.filter((p) => network[player.get("index")][p.get("index")] == 1);
+
+    // log number of opponents
     const numOpponents = opponents.length;
-    console.log("numOpponents", numOpponents);
+    console.log("Number of Opponents: ", numOpponents);
+
+    // pull the player's individual contribution
     const playerContribution = player.round.get("contribution");
-    var opponentContributions = 0;
-    for (const opponent of opponents) {
-      console.log("current opponent id:");
-      console.log(opponent.id);
-      opponentContributions = opponentContributions + opponent.round.get("contribution");
-      console.log("running opponent contribution total:");
-      console.log(opponentContributions);
+    console.log("Player Contribution: ", playerContribution);
+
+    // initialize variables for storing opponent contributions
+    let totalOpponentContributions = 0;
+    let itemizedOpponentContributions = [];
+    for (let i = 0; i < numOpponents; i++) {
+      itemizedOpponentContributions[i] = [];
+        itemizedOpponentContributions[i][0] = 0;
+        itemizedOpponentContributions[i][1] = "defaultName";
     }
-    player.round.set("opponentContributions", opponentContributions);
-    console.log("opponentContributions:", opponentContributions);
+
+    // calculate and store opponent contributions
+    for (const [index, opponent] of opponents.entries()) {
+
+      // identifying information about the opponent
+      console.log("Opponent ID: ", opponent.id);
+      console.log("Opponent Animal Name: ", opponent.get("animalName"));
+
+      // calculation of running total of ALL opponent contributions
+      totalOpponentContributions = totalOpponentContributions + opponent.round.get("contribution");
+
+      // adding a record for this opponent's name and contribution amount to the player.round
+        // note that this line assumes that if something breaks, "nobody" is the default name
+      itemizedOpponentContributions[index][0] = opponent.get("animalName") || "defaultName";
+        // note that this line assumes that if something breaks, our default contribution is 0
+      itemizedOpponentContributions[index][1] = opponent.round.get("contribution") || 0;
+
+      // log running tally of opponent contributions
+      console.log("Running Total of Opponent Contributions: ");
+      console.log(totalOpponentContributions);
+
+      // log running list of opponent contributions
+      console.log("Running Itemized Opponent Contributions");
+      console.log(itemizedOpponentContributions);
+
+    }
+
+    player.round.set("totalOpponentContributions", totalOpponentContributions);
+    console.log("Total Opponent Contributions:", totalOpponentContributions);
+
+    player.round.set("itemizedOpponentContributions", itemizedOpponentContributions);
+    console.log("Itemized Opponent Contributions", itemizedOpponentContributions);
+
     // roundWinnings assumes the pot DOUBLES the amount of money contributed to it
     // this value should be in the game config file though, so work on that
-    let roundWinnings = ((2 * (playerContribution + opponentContributions)) / (1 + numOpponents ));
+    let roundWinnings = ((2 * (playerContribution + totalOpponentContributions)) / (1 + numOpponents ));
+    console.log("Total Tokens in Pot just DOUBLED.")
     player.round.set("roundWinnings", roundWinnings);
-    console.log("roundWinnings:", roundWinnings);
+    console.log("Round Winnings:", roundWinnings);
     // pulls score attribute of player
     const currentScore = player.get("score") || 0;
-    console.log("currentScore", currentScore);
+    console.log("Previous Score", currentScore);
     // sets their total score as:
     //    initial endowment (set by default to 10)
     //  - their contribution 
     //  + their individual winnings from the round 
     //  + their current running total
     player.set("score", 10 - playerContribution + roundWinnings + currentScore);
-    console.log("score:", player.get("score"));
+    console.log("Updated Score:", player.get("score"));
   }
 
 });
