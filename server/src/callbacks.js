@@ -163,6 +163,11 @@ Empirica.onGameStart(({ game }) => {
   var peopleTraitA = [];
   for (let i = 0; i < len; i+=1) {
     peopleTraitA[i] = players[i].get("traitA");
+    // if that value equals 0, we let it equal 1 to avoid isolation in the network
+    if (peopleTraitA[i] == 0) {
+      peopleTraitA[i] = 1;
+    }
+
   }
 
   // console.log("peopleTraitA: ", peopleTraitA);
@@ -243,6 +248,34 @@ Empirica.onGameStart(({ game }) => {
   console.log(network);
   console.log("networkCheck:");
   console.log(networkCheck);
+
+  // now, we want to make sure the opponent animal names list is populated 
+
+  for (const player of players) {
+
+    // log the player's identifying info
+    console.log("");
+    console.log("-----");
+    console.log("Player ID: ", player.id);
+    console.log("Player Animal Name: ", player.get("animalName"));
+
+    // filter the network to only include other players that are adjacent to the player
+    const opponents = players.filter((p) => network[player.get("index")][p.get("index")] == 1);
+
+    // log number of opponents
+    const numOpponents = opponents.length;
+    console.log("Number of Opponents: ", numOpponents);
+
+    // instantiate opponentAnimalNames
+    let opponentAnimalNames = [];
+    for (let i = 0; i < numOpponents; i++) {
+      opponentAnimalNames[i] = opponents[i].get("animalName");
+    }
+    player.set("opponentAnimalNames", opponentAnimalNames);
+
+    console.log("Opponent Animal Names: ", player.get("opponentAnimalNames"));
+  
+  }
   
 });
 
@@ -253,7 +286,7 @@ Empirica.onStageStart(({ stage }) => {
   if (stage.get("name") !== "choice") return;
 
   // if the stage that is beginning now is choice, we add default values
-  // for all player contributions. these values are 
+  // for all player contributions, to avoid the problem of player dropout
 
   console.log("Starting default score setting process...")
 
@@ -270,9 +303,9 @@ Empirica.onStageStart(({ stage }) => {
     console.log("Player ID: ", player.id);
     console.log("Player Animal Name: ", player.get("animalName"));
 
-    console.log("Setting default contribution amount to lastContribution... ");
-    player.round.set("contribution", player.get("lastContribution"));
-
+      // propagate lastContribution to this round's contribution.
+      console.log("Setting default contribution amount to lastContribution... ");
+      player.round.set("contribution", player.get("lastContribution"));
 
   }
 

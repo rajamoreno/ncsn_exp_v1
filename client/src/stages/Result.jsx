@@ -6,7 +6,6 @@ import { usePlayer, usePlayers } from "@empirica/core/player/classic/react";
 
 export function Result() {
     const player = usePlayer();
-    const players = usePlayers();
     const itemizedOpponentContributions = player.round.get("itemizedOpponentContributions");
     const totalOpponentContributions = player.round.get("totalOpponentContributions")
     return (
