@@ -1,5 +1,4 @@
 // client/src/stages/Result.jsx
-// more header info probably wanted here
 import React, { useState } from "react";
 import { Button } from "../components/Button";
 import { usePlayer } from "@empirica/core/player/classic/react";
@@ -20,8 +19,14 @@ export function Result() {
         const isValid = value.match(/^\d*\.?\d*$/); // Regular expression for floating point numbers
 
         if (isValid || value === '') {
-            setValidationMessage(''); // Clear message if valid
-            setGuess(value); // Update guess if valid
+            // Check if the value is within the 0 to 10 range and is not empty
+            const numValue = parseFloat(value);
+            if (numValue >= 0 && numValue <= 10 || value === '') {
+                setValidationMessage(''); // Clear message if valid
+                setGuess(value); // Update guess if valid
+            } else {
+                setValidationMessage('Please enter a number between 0 and 10.');
+            }
         } else {
             setValidationMessage('Please enter a valid floating point number.');
         }
@@ -30,11 +35,13 @@ export function Result() {
     // Example function to submit the guess
     // This is where you might interact with the player object or other parts of your app
     const submitGuess = () => {
-        if (guess !== "" && validationMessage === "") {
+        const numGuess = parseFloat(guess);
+        if (guess !== "" && !isNaN(numGuess) && numGuess >= 0 && numGuess <= 10 && validationMessage === "") {
             console.log("Submitting guess:", guess);
-            player.round.set("guessOfAverageCont", guess)
+            player.round.set("guessOfAverageCont", guess);
+            player.stage.set("submit", true); // Move to the next stage after submitting
         } else {
-            setValidationMessage('Please enter a valid floating point number before submitting.');
+            setValidationMessage('Please enter a valid number between 0 and 10 before submitting.');
         }
     };
 
@@ -80,9 +87,6 @@ export function Result() {
             {validationMessage && <span style={{color: 'red'}}>{validationMessage}</span>}
             <Button handleClick={submitGuess}>
                 Submit Guess
-            </Button>
-            <Button handleClick={() => player.stage.set("submit", true)}>
-                Play Again!
             </Button>
         </div>
     );

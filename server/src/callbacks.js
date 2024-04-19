@@ -176,8 +176,8 @@ Empirica.onGameStart(({ game }) => {
   // console.log("peopleTraitB: ", peopleTraitB);
 
   // we now set values for homophily and acrophily
-  var homophily = 0.8;
-  var acrophily = 0.8;
+  var homophily = treatment.homophily; // STILL NOT UPDATED TO PULL FROM PARAMETER SETTING
+  var acrophily = treatment.acrophily; // STILL NOT UPDATED TO PULL FROM PARAMETER SETTING
   var network = [];
 
   // we construct a matrix to hold the probability person i
@@ -233,6 +233,18 @@ Empirica.onGameStart(({ game }) => {
     for (let j = 0; j < len; j++) {
       if (i == j) {
         network[i][j] = 0;
+      }
+    }
+  }
+
+  // this is an extra step to make the network symmetric (e.g. network[i][j] = network[j][i])
+  // I didn't want to remove the prior asymmetrical construction before we ship this in case
+  // we need to revert to asymmetry.
+
+  for (let i = 0; i < len; i++) {
+    for (let j = 0; j < len; j++) {
+      if (i > j) {
+        network[i][j] = network[j][i];
       }
     }
   }
