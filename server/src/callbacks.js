@@ -18,8 +18,8 @@ Empirica.onGameStart(({ game }) => {
     const round = game.addRound({
       name: `Round ${i + 1}`,
     })
-    round.addStage({name: "choice", duration:10000});
-    round.addStage({name: "result", duration:10000});
+    round.addStage({name: "choice", duration:20});
+    round.addStage({name: "result", duration:20});
     console.log("Added round ", i, "...");
   }
   console.log("All rounds added...");
@@ -405,7 +405,7 @@ Empirica.onStageEnded(({ stage }) => {
 
     // roundWinnings assumes the pot DOUBLES the amount of money contributed to it
     // this value should be in the game config file though, so work on that
-    let roundWinnings = ((2 * (playerContribution + totalOpponentContributions)) / (1 + numOpponents ));
+    let roundWinnings = ((2 * (playerContribution + totalOpponentContributions)) / (1 + numOpponents));
     console.log("Total Tokens in Pot just DOUBLED.")
     player.round.set("roundWinnings", roundWinnings);
     console.log("Round Winnings:", roundWinnings);
@@ -413,11 +413,11 @@ Empirica.onStageEnded(({ stage }) => {
     const currentScore = player.get("score") || 0;
     console.log("Previous Score", currentScore);
     // sets their total score as:
-    //    initial endowment (set by default to 10)
+    //    initial endowment (set by default to 100)
     //  - their contribution 
     //  + their individual winnings from the round 
     //  + their current running total
-    player.set("score", 10 - playerContribution + roundWinnings + currentScore);
+    player.set("score", 100 - playerContribution + roundWinnings + currentScore);
     console.log("Updated Score:", player.get("score"));
   }
 

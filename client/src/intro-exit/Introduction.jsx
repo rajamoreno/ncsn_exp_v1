@@ -6,11 +6,12 @@ export function Introduction({ next }) {
 
   const player = usePlayer();
 
+  // this function gets called when any of the contribution buttons are clicked.
   function onClick(generosity) {
     console.log("Player Pressed Button: ", generosity);
     // sets this as the player's most recent contribution 
     player.set("lastContribution", generosity);
-    // scales the player's contribution to their traitA parameter like so:
+    // we now scale the player's contribution to their traitA parameter like so:
     //  0   -> 0.1
     //  25  -> 0.3
     //  50  -> 0.5
@@ -53,11 +54,11 @@ export function Introduction({ next }) {
           Instructions: 
         </h4>
         <p>Everyone playing the game begins each Round with 100 tokens.  The game proceeds as follows:</p>
-        <ol>
+        <ul className="list-disc list-inside">
           <li>First, all players are given the option to contribute any number of these tokens (in increments of 25) to the collective pot.  Any tokens not contributed are kept by the participant in their private bank.  All players are given 20 seconds to make their decision.</li>
           <li>Then, all tokens in the collective pot are doubled by the experimenter.</li>
           <li>Finally, the collective pot (now twice the original size) is evenly divided amongst all the participants and deposited in their private bank, regardless of whether or not they donated any tokens.</li>
-        </ol>
+        </ul>
         <p>The game has five rounds total.  At the beginning of each round all players get another 100 tokens to play with.  At the end of all 5 rounds, any tokens in one’s private pot are converted to a monetary bonus at a rate of 100 tokens = $0.50.</p>
         <p><strong>Round 1 has not yet begun.  Before it starts, please indicate using the buttons below how many tokens you wish to contribute to the collective pot.  You will then enter the game, learn about your fellow players and begin Round 1.</strong></p>
       </div>
