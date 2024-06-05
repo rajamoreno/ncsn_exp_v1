@@ -2,9 +2,11 @@
 // more header info probably wanted here
 import React from "react";
 import { Button } from "../components/Button";
-import { usePlayer } from "@empirica/core/player/classic/react";
+import { usePlayer, useRound } from "@empirica/core/player/classic/react";
 
 export function Choice() {
+
+    const round = useRound();
 
     const player = usePlayer();
     const opponentAnimalNames = player.get("opponentAnimalNames")
@@ -12,8 +14,8 @@ export function Choice() {
     const totalOpponentContributions = player.round.get("totalOpponentContributions")
 
     function onClick(contribution) {
-        console.log("player name:", player.get("name"));
-        console.log("you chose to contribute:", contribution);
+        console.log("Player:", player.get("name"));
+        console.log("You chose to contribute:", contribution);
         player.round.set("contribution", contribution);
         player.set("lastContribution", contribution);
         player.stage.set("submit", true);

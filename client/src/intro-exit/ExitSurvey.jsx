@@ -2,6 +2,7 @@ import { usePlayer } from "@empirica/core/player/classic/react";
 import React, { useState } from "react";
 import { Alert } from "../components/Alert";
 import { Button } from "../components/Button";
+import { Radio } from "../components/Radio";
 
 export function ExitSurvey({ next }) {
   const labelClassName = "block text-sm font-medium text-gray-700 my-2";
@@ -16,6 +17,14 @@ export function ExitSurvey({ next }) {
   const [feedback, setFeedback] = useState("");
   const [education, setEducation] = useState("");
 
+  // this array is an EXAMPLE -- I still need to port in the appropriate opponent animal names lists 
+  const names = ["Lion", "Tiger", "Bear"];
+  const [responses, setResponses] = useState(names.reduce((acc, name) => ({ ...acc, [name]: "" }), {}));
+
+  function handleResponseChange(name, value) {
+    setResponses(prev => ({ ...prev, [name]: value }));
+  }
+
   function handleSubmit(event) {
     event.preventDefault()
     player.set("exitSurvey", {
@@ -25,6 +34,7 @@ export function ExitSurvey({ next }) {
       fair,
       feedback,
       education,
+      playAgainResponses: responses
     });
     next();
   }
@@ -37,12 +47,7 @@ export function ExitSurvey({ next }) {
     <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <Alert title="Bonus">
         <p>
-          Please submit the following code to receive your bonus:{" "}
-          <strong>{player.id}</strong>.
-        </p>
-        <p className="pt-1">
-          Your final <strong>bonus</strong> is in addition of the{" "}
-          <strong>1 base reward</strong> for completing the HIT.
+          Across the five rounds of the game, you earned <strong>{player.get("score")}</strong> tokens. We will convert this to a monetary bonus which will be transferred within the next week to you on your Prolific account.
         </p>
       </Alert>
 
@@ -57,8 +62,7 @@ export function ExitSurvey({ next }) {
                 Exit Survey
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                Please answer the following short survey. You do not have to
-                provide any information you feel uncomfortable with.
+                Before completing this study, we have a few more questions for you. 
               </p>
             </div>
 
@@ -176,30 +180,35 @@ export function ExitSurvey({ next }) {
                   onChange={(e) => setFeedback(e.target.value)}
                 />
               </div>
+            </div>
 
-              <div className="mb-12">
-                <Button type="submit">Submit</Button>
-              </div>
+            <div className="space-y-8 mt-6">
+              {/* New questions added dynamically */}
+              {names.map(name => (
+                <div key={name}>
+                  <label className={labelClassName}>{`Would you like to play with ${name} again?`}</label>
+                  <div className="grid gap-2">
+                    {[1, 2, 3, 4, 5, 6, 7].map(score => (
+                      <Radio
+                        key={score}
+                        selected={responses[name]}
+                        name={`play-again-${name}`}
+                        value={String(score)}
+                        label={score === 1 ? "I would NOT want to play with this player." : score === 7 ? "I would DEFINITELY want to play with this player." : score}
+                        onChange={(e) => handleResponseChange(name, e.target.value)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mb-12">
+              <Button type="submit">Submit</Button>
             </div>
           </div>
         </div>
       </form>
     </div>
-  );
-}
-
-export function Radio({ selected, name, value, label, onChange }) {
-  return (
-    <label className="text-sm font-medium text-gray-700">
-      <input
-        className="mr-2 shadow-sm sm:text-sm"
-        type="radio"
-        name={name}
-        value={value}
-        checked={selected === value}
-        onChange={onChange}
-      />
-      {label}
-    </label>
   );
 }

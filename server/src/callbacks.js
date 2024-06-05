@@ -147,8 +147,8 @@ Empirica.onGameStart(({ game }) => {
     console.log("Successfully tagged player ", i, " with an index...");
     players[i].set("animalName", wildAnimals[i]);
     console.log("Successfully set ", wildAnimals[i], " as the animal name of player ", i, "...");
-    // IMPORTANT: the default contribution amount is set to 5, but THIS IS MUTABLE
-    players[i].set("lastContribution", 5);
+    // IMPORTANT: the default contribution amount is set to 50, but THIS IS MUTABLE
+    players[i].set("lastContribution", 50);
   }
 
   // len is the number of participants in the game.

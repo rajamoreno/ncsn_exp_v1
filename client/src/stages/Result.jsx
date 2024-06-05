@@ -1,9 +1,11 @@
 // client/src/stages/Result.jsx
 import React, { useState } from "react";
 import { Button } from "../components/Button";
-import { usePlayer } from "@empirica/core/player/classic/react";
+import { usePlayer, useRound } from "@empirica/core/player/classic/react";
 
 export function Result() {
+
+    const round = useRound();
 
     const player = usePlayer();
     const itemizedOpponentContributions = player.round.get("itemizedOpponentContributions");
@@ -19,47 +21,33 @@ export function Result() {
         const isValid = value.match(/^\d*\.?\d*$/); // Regular expression for floating point numbers
 
         if (isValid || value === '') {
-            // Check if the value is within the 0 to 10 range and is not empty
+            // Check if the value is within the 0 to 100 range and is not empty
             const numValue = parseFloat(value);
-            if (numValue >= 0 && numValue <= 10 || value === '') {
+            if (numValue >= 0 && numValue <= 100 || value === '') {
                 setValidationMessage(''); // Clear message if valid
                 setGuess(value); // Update guess if valid
             } else {
-                setValidationMessage('Please enter a number between 0 and 10.');
+                setValidationMessage('Please enter a number between 0 and 100.');
             }
         } else {
             setValidationMessage('Please enter a valid floating point number.');
         }
     };
 
-    // Example function to submit the guess
-    // This is where you might interact with the player object or other parts of your app
     const submitGuess = () => {
         const numGuess = parseFloat(guess);
-        if (guess !== "" && !isNaN(numGuess) && numGuess >= 0 && numGuess <= 10 && validationMessage === "") {
+        if (guess !== "" && !isNaN(numGuess) && numGuess >= 0 && numGuess <= 100 && validationMessage === "") {
             console.log("Submitting guess:", guess);
             player.round.set("guessOfAverageCont", guess);
             player.stage.set("submit", true); // Move to the next stage after submitting
         } else {
-            setValidationMessage('Please enter a valid number between 0 and 10 before submitting.');
+            setValidationMessage('Please enter a valid number between 0 and 100 before submitting.');
         }
     };
 
     return (
         <div>
-            <p>Your nickname in this game is <strong>{player.get("animalName")}</strong>.</p>
-            <p>This round, you contributed {player.round.get("contribution")} token(s)</p>
-            <br />
-            <p>The other players in this game are:</p>
-            {itemizedOpponentContributions && itemizedOpponentContributions.length > 0 ? (
-                <ul>
-                    {itemizedOpponentContributions.map((contribution, index) => (
-                        <li key={index}>- {contribution[0]}</li>
-                    ))}
-                </ul>
-            ) : (
-                <p>(No other players in this game.)</p>
-            )}
+            <p>In Round {round.get("name")}, you contributed {player.round.get("contribution")} token(s). Here's what your fellow players contributed:</p>
             <br />
             <p>Here's what they contributed this round:</p>
             {itemizedOpponentContributions && itemizedOpponentContributions.length > 0 ? (
@@ -73,11 +61,11 @@ export function Result() {
             )}
             <p>Together, the other players contributed {totalOpponentContributions} token(s) this round.</p>
             <br />
-            <p>You received {player.round.get("roundWinnings")} token(s) from the collective pot.</p>
+            <p>The collective pot has been doubled and divided amongst you and your fellow players.</p>
             <br />
-            <p><strong>You now have a total of {player.get("score")} token(s).</strong></p>
+            <p>You received {player.round.get("roundWinnings")} token(s) from the collective pot. <strong>You now have a total of {player.get("score")} token(s).</strong></p>
             <br />
-            <p>Guess the average amount of tokens everyone across the network gave this round:</p>
+            <p>Before proceeding to the next round, please enter your best guess of the average amount of tokens contributed in the previous round across all 20 players currently playing the game.</p>
             <input 
                 type="text"
                 value={guess}
