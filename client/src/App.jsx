@@ -1,11 +1,15 @@
+//App.jsx
+
 import { EmpiricaClassic } from "@empirica/core/player/classic";
 import { EmpiricaContext } from "@empirica/core/player/classic/react";
 import { EmpiricaMenu, EmpiricaParticipant } from "@empirica/core/player/react";
 import React from "react";
 import "virtual:windi.css";
+import { MyConsent } from "./MyConsent.jsx";
+import { MyPlayerForm } from "./MyPlayerForm.jsx";
 import { Game } from "./Game";
-import { ExitSurvey } from "./intro-exit/ExitSurvey";
 import { Introduction } from "./intro-exit/Introduction";
+import { ExitSurvey } from "./intro-exit/ExitSurvey";
 
 export default function App() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -27,7 +31,7 @@ export default function App() {
       <div className="h-screen relative">
         <EmpiricaMenu />
         <div className="h-full overflow-auto">
-          <EmpiricaContext introSteps={introSteps} exitSteps={exitSteps}>
+          <EmpiricaContext consent={MyConsent} playerCreate={MyPlayerForm} introSteps={introSteps} exitSteps={exitSteps}>
             <Game />
           </EmpiricaContext>
         </div>
