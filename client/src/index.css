@@ -113,3 +113,9 @@ Meanwhile, embedding slider css below.
 .slider-thumb-zero:hover::-moz-range-thumb {
   @apply bg-empirica-600 border-none;
 }
+
+/* Small Text */
+
+.small-text {
+  font-size: 0.75rem; /* Adjust the size as needed */
+}

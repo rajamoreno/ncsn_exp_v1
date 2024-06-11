@@ -1,7 +1,9 @@
+// Button.jsx
+
 import React from "react";
 
 const base =
-  "inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-empirica-500";
+  "inline-flex items-center justify-center px-4 py-2 border text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-empirica-500 text-center";
 const prim =
   "border-gray-300 shadow-sm text-gray-700 bg-white hover:bg-gray-50";
 const sec =

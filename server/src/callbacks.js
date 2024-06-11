@@ -1,6 +1,8 @@
+// callbacks.js
+
 import { ClassicListenersCollector } from "@empirica/core/admin/classic";
 // import { usePlayer, usePlayers } from "@empirica/core/player/classic/react";
-const { shuffle } = require("simple-statistics");
+const { shuffle, sample } = require("simple-statistics");
 
 export const Empirica = new ClassicListenersCollector();
 
@@ -18,8 +20,8 @@ Empirica.onGameStart(({ game }) => {
     const round = game.addRound({
       name: `Round ${i + 1}`,
     })
-    round.addStage({name: "choice", duration:20});
-    round.addStage({name: "result", duration:20});
+    round.addStage({name: "choice", duration:60});
+    round.addStage({name: "result", duration:60});
     console.log("Added round ", i, "...");
   }
   console.log("All rounds added...");
@@ -148,7 +150,7 @@ Empirica.onGameStart(({ game }) => {
     players[i].set("animalName", wildAnimals[i]);
     console.log("Successfully set ", wildAnimals[i], " as the animal name of player ", i, "...");
     // IMPORTANT: the default contribution amount is set to 50, but THIS IS MUTABLE
-    players[i].set("lastContribution", 50);
+    // players[i].set("lastContribution", 50);
   }
 
   // len is the number of participants in the game.
@@ -176,8 +178,8 @@ Empirica.onGameStart(({ game }) => {
   // console.log("peopleTraitB: ", peopleTraitB);
 
   // we now set values for homophily and acrophily
-  var homophily = treatment.homophily; // STILL NOT UPDATED TO PULL FROM PARAMETER SETTING
-  var acrophily = treatment.acrophily; // STILL NOT UPDATED TO PULL FROM PARAMETER SETTING
+  var homophily = treatment.homophily;
+  var acrophily = treatment.acrophily;
   var network = [];
 
   // we construct a matrix to hold the probability person i
@@ -249,6 +251,27 @@ Empirica.onGameStart(({ game }) => {
     }
   }
 
+  // this code takes participants who didn't match with anyone and assigns them to a random
+  // other participant
+  for (let i = 0; i < len; i++) {
+    let degree = 0;
+    for (let j = 0; j < len; j++) {
+      if (network[i][j] == 1) {
+        degree++;
+      }
+    }
+    if (degree == 0) { // this is where we want to randomly assort the degree-0 participant to another one
+      const arrayOfOtherParticipants = [];
+      for (let k = 0; k < len; k++) {
+        if (k !== i) {
+          arrayOfOtherParticipants.push(i);
+        }
+      }
+      newConnection = sample(arrayOfOtherParticipants, 1);
+      network[i][newConnection] = 1
+    }
+  }
+
   // now we set the network as an attribute of the game so we can access it everywhere
   game.set("network", network);
 
@@ -315,9 +338,14 @@ Empirica.onStageStart(({ stage }) => {
     console.log("Player ID: ", player.id);
     console.log("Player Animal Name: ", player.get("animalName"));
 
+    // Adding delay to ensure state propagation
+    setTimeout(() => {
       // propagate lastContribution to this round's contribution.
       console.log("Setting default contribution amount to lastContribution... ");
       player.round.set("contribution", player.get("lastContribution"));
+      console.log("player.round.get('contribution'): ", player.round.get("contribution"))
+      console.log("player.get('lastContribution'): ", player.get("lastContribution"))
+    }, 100); // 100ms delay to ensure state update
 
   }
 

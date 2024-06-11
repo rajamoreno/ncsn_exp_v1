@@ -1,3 +1,5 @@
+// client/src/intro-exit/ExitSurvey.jsx
+
 import { usePlayer } from "@empirica/core/player/classic/react";
 import React, { useState } from "react";
 import { Alert } from "../components/Alert";
@@ -9,38 +11,51 @@ export function ExitSurvey({ next }) {
   const inputClassName =
     "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-empirica-500 focus:border-empirica-500 sm:text-sm";
   const player = usePlayer();
-
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
-  const [strength, setStrength] = useState("");
-  const [fair, setFair] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [education, setEducation] = useState("");
-
-  // this array is an EXAMPLE -- I still need to port in the appropriate opponent animal names lists 
-  const names = ["Lion", "Tiger", "Bear"];
+  // console.log("player: ", player)
+  const opponentAnimalNames = player.get("opponentAnimalNames")
+  // console.log("opponentAnimalNames: ", opponentAnimalNames)
+  const names = opponentAnimalNames
+  // const names = ["Lion", "Tiger", "Bear"] // example animal names for demo purposes
   const [responses, setResponses] = useState(names.reduce((acc, name) => ({ ...acc, [name]: "" }), {}));
 
   function handleResponseChange(name, value) {
     setResponses(prev => ({ ...prev, [name]: value }));
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    player.set("exitSurvey", {
-      age,
-      gender,
-      strength,
-      fair,
-      feedback,
-      education,
-      playAgainResponses: responses
-    });
-    next();
-  }
+  const [guess, setGuess] = useState("")
+  const [validationMessage, setValidationMessage] = useState("");
 
-  function handleEducationChange(e) {
-    setEducation(e.target.value);
+  // Handler for guess input changes
+  const handleGuessChange = (e) => {
+    const value = e.target.value;
+    const isValid = value.match(/^\d*\.?\d*$/); // Regular expression for floating point numbers
+
+    if (isValid || value === "") {
+      // Check if the value is within the 0 to 100 range and is not empty
+      const numValue = parseFloat(value);
+      if ((numValue >= 0 && numValue <= 100) || value === "") {
+        setValidationMessage(""); // Clear message if valid
+        setGuess(value); // Update guess if valid
+      } else {
+        setValidationMessage("Please enter a number between 0 and 100.");
+      }
+    } else {
+      setValidationMessage("Please enter a valid floating point number.");
+    }
+  };
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    const numGuess = parseFloat(guess);
+    if (guess !== "" && !isNaN(numGuess) && numGuess >= 0 && numGuess <= 100 && validationMessage === "") {
+      player.set("exitSurvey", {
+        guess,
+        playAgainResponses: responses,
+      });
+      next();
+    } else {
+      setValidationMessage("Please enter a valid number between 0 and 100 before submitting.");
+    }
   }
 
   return (
@@ -66,120 +81,17 @@ export function ExitSurvey({ next }) {
               </p>
             </div>
 
-            <div className="space-y-8 mt-6">
-              <div className="flex flex-row">
-                <div>
-                  <label htmlFor="email" className={labelClassName}>
-                    Age
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      id="age"
-                      name="age"
-                      type="number"
-                      autoComplete="off"
-                      className={inputClassName}
-                      value={age}
-                      onChange={(e) => setAge(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="ml-5">
-                  <label htmlFor="email" className={labelClassName}>
-                    Gender
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      id="gender"
-                      name="gender"
-                      autoComplete="off"
-                      className={inputClassName}
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className={labelClassName}>
-                  Highest Education Qualification
-                </label>
-                <div className="grid gap-2">
-                  <Radio
-                    selected={education}
-                    name="education"
-                    value="high-school"
-                    label="High School"
-                    onChange={handleEducationChange}
-                  />
-                  <Radio
-                    selected={education}
-                    name="education"
-                    value="bachelor"
-                    label="US Bachelor's Degree"
-                    onChange={handleEducationChange}
-                  />
-                  <Radio
-                    selected={education}
-                    name="education"
-                    value="master"
-                    label="Master's or higher"
-                    onChange={handleEducationChange}
-                  />
-                  <Radio
-                    selected={education}
-                    name="education"
-                    value="other"
-                    label="Other"
-                    onChange={handleEducationChange}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-x-6 gap-y-3">
-                <label className={labelClassName}>
-                  How would you describe your strength in the game?
-                </label>
-
-                <label className={labelClassName}>
-                  Do you feel the pay was fair?
-                </label>
-
-                <label className={labelClassName}>
-                  Feedback, including problems you encountered.
-                </label>
-
-                <textarea
-                  className={inputClassName}
-                  dir="auto"
-                  id="strength"
-                  name="strength"
-                  rows={4}
-                  value={strength}
-                  onChange={(e) => setStrength(e.target.value)}
-                />
-
-                <textarea
-                  className={inputClassName}
-                  dir="auto"
-                  id="fair"
-                  name="fair"
-                  rows={4}
-                  value={fair}
-                  onChange={(e) => setFair(e.target.value)}
-                />
-
-                <textarea
-                  className={inputClassName}
-                  dir="auto"
-                  id="feedback"
-                  name="feedback"
-                  rows={4}
-                  value={feedback}
-                  onChange={(e) => setFeedback(e.target.value)}
-                />
-              </div>
+            {/* I want to insert the "guess" question here. */}
+            <div>
+              <label className={labelClassName}>Please enter your best guess of the average amount of tokens contributed in the previous round across all 20 players currently playing the game.</label>
+              <input
+                type="text"
+                value={guess}
+                onChange={handleGuessChange}
+                placeholder="Enter your guess"
+                className={inputClassName}
+              />
+              {validationMessage && <span style={{ color: "red" }}>{validationMessage}</span>}
             </div>
 
             <div className="space-y-8 mt-6">
@@ -194,7 +106,7 @@ export function ExitSurvey({ next }) {
                         selected={responses[name]}
                         name={`play-again-${name}`}
                         value={String(score)}
-                        label={score === 1 ? "I would NOT want to play with this player." : score === 7 ? "I would DEFINITELY want to play with this player." : score}
+                        label={score === 1 ? "1 (I would NOT want to play with this player.)" : score === 7 ? "7 (I would DEFINITELY want to play with this player.)" : score}
                         onChange={(e) => handleResponseChange(name, e.target.value)}
                       />
                     ))}
@@ -202,6 +114,8 @@ export function ExitSurvey({ next }) {
                 </div>
               ))}
             </div>
+
+            <br></br>
 
             <div className="mb-12">
               <Button type="submit">Submit</Button>

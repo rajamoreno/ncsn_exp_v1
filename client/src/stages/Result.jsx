@@ -46,8 +46,8 @@ export function Result() {
     };
 
     return (
-        <div>
-            <p>In Round {round.get("name")}, you contributed {player.round.get("contribution")} token(s). Here's what your fellow players contributed:</p>
+        <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p>In {round.get("name")}, you contributed {player.round.get("contribution")} token(s). Here's what your fellow players contributed:</p>
             <br />
             <p>Here's what they contributed this round:</p>
             {itemizedOpponentContributions && itemizedOpponentContributions.length > 0 ? (
@@ -65,7 +65,7 @@ export function Result() {
             <br />
             <p>You received {player.round.get("roundWinnings")} token(s) from the collective pot. <strong>You now have a total of {player.get("score")} token(s).</strong></p>
             <br />
-            <p>Before proceeding to the next round, please enter your best guess of the average amount of tokens contributed in the previous round across all 20 players currently playing the game.</p>
+            <p>Before proceeding to the next round, please enter your best guess of the <i>average</i> amount of tokens contributed in the previous round <i>across all 20 players</i> currently playing the game.</p>
             <input 
                 type="text"
                 value={guess}
