@@ -149,8 +149,10 @@ Empirica.onGameStart(({ game }) => {
     console.log("Successfully tagged player ", i, " with an index...");
     players[i].set("animalName", wildAnimals[i]);
     console.log("Successfully set ", wildAnimals[i], " as the animal name of player ", i, "...");
-    // IMPORTANT: the default contribution amount is set to 50, but THIS IS MUTABLE
-    // players[i].set("lastContribution", 50);
+    // IMPORTANT: the default contribution amount is set to 50 if a player fails to submit the introduction stage, but THIS IS MUTABLE
+    const lastContribution = players[i].get("lastContribution") || 50;
+    players[i].set("lastContribution", lastContribution);
+    players[i].set("sizeOfNetwork", len)
   }
 
   // len is the number of participants in the game.
@@ -204,7 +206,7 @@ Empirica.onGameStart(({ game }) => {
         probLike[i][j] = 0;
     }
   }
-  // we now populate a matrix, network, to hold the probability person i
+  // we now construct a matrix, network, to hold the probability person i
   // IS CONNECTED TO person j given probMeet[i][j] and probLike[i][j].
   for (let i = 0; i < len; i++) {
     network[i] = [];
@@ -251,8 +253,8 @@ Empirica.onGameStart(({ game }) => {
     }
   }
 
-  // this code takes participants who didn't match with anyone and assigns them to a random
-  // other participant
+  // this code takes participants who didn't match with anyone during network assignment (e.g., all zeros in their row) 
+  // and assigns them to a random other participant that IS NOT themselves
   for (let i = 0; i < len; i++) {
     let degree = 0;
     for (let j = 0; j < len; j++) {
@@ -261,14 +263,19 @@ Empirica.onGameStart(({ game }) => {
       }
     }
     if (degree == 0) { // this is where we want to randomly assort the degree-0 participant to another one
+      console.log(players[i].get("animalName"), " didn't connect with any other players. We now randomly select a connection for them.")
+      players[i].set("hadToRandomlyAssignConnection", "YES")
       const arrayOfOtherParticipants = [];
       for (let k = 0; k < len; k++) {
         if (k !== i) {
-          arrayOfOtherParticipants.push(i);
+          arrayOfOtherParticipants.push(k); // this should add only the indices of OTHER participants
         }
       }
-      newConnection = sample(arrayOfOtherParticipants, 1);
+      newConnection = sample(arrayOfOtherParticipants, 1)[0];
       network[i][newConnection] = 1
+      network[newConnection][i] = 1 // to preserve the symmetry of the network
+    } else {
+      players[i].set("hadToRandomlyAssignConnection", "NO")
     }
   }
 
@@ -322,7 +329,8 @@ Empirica.onStageStart(({ stage }) => {
 
   // if the stage that is beginning now is choice, we add default values
   // for all player contributions, to avoid the problem of player dropout
-
+  console.log("");
+  console.log("-----");
   console.log("Starting default score setting process...")
 
   const players = stage.currentGame.players;
@@ -338,21 +346,18 @@ Empirica.onStageStart(({ stage }) => {
     console.log("Player ID: ", player.id);
     console.log("Player Animal Name: ", player.get("animalName"));
 
-    // Adding delay to ensure state propagation
-    setTimeout(() => {
-      // propagate lastContribution to this round's contribution.
-      console.log("Setting default contribution amount to lastContribution... ");
-      player.round.set("contribution", player.get("lastContribution"));
-      console.log("player.round.get('contribution'): ", player.round.get("contribution"))
-      console.log("player.get('lastContribution'): ", player.get("lastContribution"))
-    }, 100); // 100ms delay to ensure state update
-
+    // propagate lastContribution to this round's contribution.
+    console.log("Setting default contribution amount to lastContribution... ");
+    player.round.set("contribution", player.get("lastContribution"));
+    console.log("player.round.get('contribution'): ", player.round.get("contribution"))
+    console.log("player.get('lastContribution'): ", player.get("lastContribution"))
   }
-
 });
 
 Empirica.onStageEnded(({ stage }) => {
 
+  console.log("");
+  console.log("-----");
   console.log("Checking stage name...");
   console.log("Stage name is ", stage.get("name"));
 

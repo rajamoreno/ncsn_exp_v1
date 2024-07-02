@@ -9,14 +9,14 @@ export function Choice() {
     const buttonWidthClass = "w-20";
 
     const round = useRound();
-
     const player = usePlayer();
+
     const opponentAnimalNames = player.get("opponentAnimalNames")
     const itemizedOpponentContributions = player.round.get("itemizedOpponentContributions");
     const totalOpponentContributions = player.round.get("totalOpponentContributions")
 
     function onClick(contribution) {
-        console.log("Player:", player.get("name"));
+        console.log("Player:", player.get("animalName"));
         console.log("You chose to contribute:", contribution);
         player.round.set("contribution", contribution);
         player.set("lastContribution", contribution);
@@ -26,7 +26,7 @@ export function Choice() {
     return (
         <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <h3>Welcome to {round.get("name")}!</h3>
-            <p>You’re part of a group of 19 other Prolific participants who are playing the Group Decision Making Game simultaneously.  All players are assigned a position in a social network which determines with whom they’re playing the game.</p>
+            <p>You’re part of a group of {player.get("sizeOfNetwork") - 1} other Prolific participant(s) who are playing the Group Decision Making Game simultaneously.  All players are assigned a position in a social network which determines with whom they’re playing the game.</p>
             <br/>
             <p>All players have been assigned an animal nickname. <strong>Your nickname is {player.get("animalName")}.</strong></p>
             <p>You’re playing this game with the following other players:</p>

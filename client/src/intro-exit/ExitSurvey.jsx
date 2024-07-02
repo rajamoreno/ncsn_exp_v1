@@ -114,9 +114,9 @@ export function ExitSurvey({ next }) {
                 </div>
               ))}
             </div>
-
             <br></br>
-
+            <p>Copy completion code <strong>C1JXRERM</strong>. Click the "Submit" button, then paste the code into Prolific.</p>
+            <br></br>
             <div className="mb-12">
               <Button type="submit">Submit</Button>
             </div>

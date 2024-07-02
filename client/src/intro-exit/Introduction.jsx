@@ -16,41 +16,39 @@ export function Introduction({ next }) {
     // sets this as the player's most recent contribution 
     player.set("lastContribution", generosity);
 
-    setTimeout(() => {
-      console.log("player.get('lastContribution'): ", player.get("lastContribution"))
-      // we now scale the player's contribution to their traitA parameter like so:
-      //  0   -> 0.1
-      //  25  -> 0.3
-      //  50  -> 0.5
-      //  75  -> 0.7
-      //  100 -> 0.9
-      let traitA;
-      switch(generosity) {
-          case 0:
-              traitA = 0.1;
-              break;
-          case 25:
-              traitA = 0.3;
-              break;
-          case 50:
-              traitA = 0.5;
-              break;
-          case 75:
-              traitA = 0.7;
-              break;
-          case 100:
-              traitA = 0.9;
-              break;
-          default:
-              console.log("Error in switch statement assigning traitA.")
-              traitA = 0.0; // Default value in case something unexpected happens
-      }
-      console.log("Player's 'traitA' is: ", traitA);
-      // sets this as traitA for access when constructing the game network.
-      player.set("traitA", traitA);
-      // player.set("submit", true);
-      next();
-    }, 100); // 100 ms delay to ensure state update
+    console.log("player.get('lastContribution'): ", player.get("lastContribution"))
+    // we now scale the player's contribution to their traitA parameter like so:
+    //  0   -> 0.1
+    //  25  -> 0.3
+    //  50  -> 0.5
+    //  75  -> 0.7
+    //  100 -> 0.9
+    let traitA;
+    switch(generosity) {
+        case 0:
+            traitA = 0.1;
+            break;
+        case 25:
+            traitA = 0.3;
+            break;
+        case 50:
+            traitA = 0.5;
+            break;
+        case 75:
+            traitA = 0.7;
+            break;
+        case 100:
+            traitA = 0.9;
+            break;
+        default:
+            console.log("Error in switch statement assigning traitA.")
+            traitA = 0.0; // Default value in case something unexpected happens
+    }
+    console.log("Player's 'traitA' is: ", traitA);
+    // sets this as traitA for access when constructing the game network.
+    player.set("traitA", traitA);
+    // player.set("submit", true);
+    next();
   }
 
   return (

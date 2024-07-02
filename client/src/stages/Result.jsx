@@ -6,8 +6,8 @@ import { usePlayer, useRound } from "@empirica/core/player/classic/react";
 export function Result() {
 
     const round = useRound();
-
     const player = usePlayer();
+
     const itemizedOpponentContributions = player.round.get("itemizedOpponentContributions");
     const totalOpponentContributions = player.round.get("totalOpponentContributions")
 
@@ -53,7 +53,7 @@ export function Result() {
             {itemizedOpponentContributions && itemizedOpponentContributions.length > 0 ? (
                 <ul>
                     {itemizedOpponentContributions.map((contribution, index) => (
-                        <li key={index}>- {contribution[0]} contributed {contribution[1]} token(s)</li> // Format this line according to the structure of 'contribution'
+                        <li key={index}>- {contribution[0]} contributed {contribution[1]} token(s)</li>
                     ))}
                 </ul>
             ) : (
