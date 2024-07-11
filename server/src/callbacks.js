@@ -437,8 +437,9 @@ Empirica.onStageEnded(({ stage }) => {
     console.log("Itemized Opponent Contributions", itemizedOpponentContributions);
 
     // roundWinnings assumes the pot DOUBLES the amount of money contributed to it
-    // this value should be in the game config file though, so work on that
+    // this multiple should be in the game config file though, so work on that
     let roundWinnings = ((2 * (playerContribution + totalOpponentContributions)) / (1 + numOpponents));
+    roundWinnings = Math.round(roundWinnings) // we round the winnings from the round to the nearest integer for simplicity
     console.log("Total Tokens in Pot just DOUBLED.")
     player.round.set("roundWinnings", roundWinnings);
     console.log("Round Winnings:", roundWinnings);

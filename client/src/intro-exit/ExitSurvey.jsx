@@ -1,4 +1,5 @@
 // client/src/intro-exit/ExitSurvey.jsx
+// Refactored with ChatGPT 4o
 
 import { usePlayer } from "@empirica/core/player/classic/react";
 import React, { useState } from "react";
@@ -11,27 +12,24 @@ export function ExitSurvey({ next }) {
   const inputClassName =
     "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-empirica-500 focus:border-empirica-500 sm:text-sm";
   const player = usePlayer();
-  // console.log("player: ", player)
-  const opponentAnimalNames = player.get("opponentAnimalNames")
-  // console.log("opponentAnimalNames: ", opponentAnimalNames)
-  const names = opponentAnimalNames
-  // const names = ["Lion", "Tiger", "Bear"] // example animal names for demo purposes
+  const opponentAnimalNames = player.get("opponentAnimalNames");
+  const names = opponentAnimalNames;
   const [responses, setResponses] = useState(names.reduce((acc, name) => ({ ...acc, [name]: "" }), {}));
+  const [guess, setGuess] = useState("");
+  const [validationMessage, setValidationMessage] = useState("");
+  const [mandatoryMessage, setMandatoryMessage] = useState("");
 
+  // Handle changes in the response for each player
   function handleResponseChange(name, value) {
     setResponses(prev => ({ ...prev, [name]: value }));
   }
 
-  const [guess, setGuess] = useState("")
-  const [validationMessage, setValidationMessage] = useState("");
-
-  // Handler for guess input changes
+  // Handle changes in the guess input field
   const handleGuessChange = (e) => {
     const value = e.target.value;
-    const isValid = value.match(/^\d*\.?\d*$/); // Regular expression for floating point numbers
+    const isValid = value.match(/^\d*\.?\d*$/); // Validate floating point number
 
     if (isValid || value === "") {
-      // Check if the value is within the 0 to 100 range and is not empty
       const numValue = parseFloat(value);
       if ((numValue >= 0 && numValue <= 100) || value === "") {
         setValidationMessage(""); // Clear message if valid
@@ -44,17 +42,27 @@ export function ExitSurvey({ next }) {
     }
   };
 
+  // Handle form submission
   function handleSubmit(event) {
     event.preventDefault();
     const numGuess = parseFloat(guess);
-    if (guess !== "" && !isNaN(numGuess) && numGuess >= 0 && numGuess <= 100 && validationMessage === "") {
+    const allQuestionsAnswered = Object.values(responses).every(response => response !== "");
+
+    if (guess !== "" && !isNaN(numGuess) && numGuess >= 0 && numGuess <= 100 && validationMessage === "" && allQuestionsAnswered) {
       player.set("exitSurvey", {
         guess,
         playAgainResponses: responses,
       });
       next();
     } else {
-      setValidationMessage("Please enter a valid number between 0 and 100 before submitting.");
+      if (!allQuestionsAnswered) {
+        setMandatoryMessage("Please answer all questions before submitting.");
+      } else {
+        setMandatoryMessage(""); // Clear message if all questions are answered
+      }
+      if (guess === "" || isNaN(numGuess) || numGuess < 0 || numGuess > 100) {
+        setValidationMessage("Please enter a valid number between 0 and 100 before submitting.");
+      }
     }
   }
 
@@ -66,24 +74,16 @@ export function ExitSurvey({ next }) {
         </p>
       </Alert>
 
-      <form
-        className="mt-12 space-y-8 divide-y divide-gray-200"
-        onSubmit={handleSubmit}
-      >
+      <form className="mt-12 space-y-8 divide-y divide-gray-200" onSubmit={handleSubmit}>
         <div className="space-y-8 divide-y divide-gray-200">
           <div>
             <div>
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Exit Survey
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Before completing this study, we have a few more questions for you. 
-              </p>
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Exit Survey</h3>
+              <p className="mt-1 text-sm text-gray-500">Before completing this study, we have a few more questions for you.</p>
             </div>
 
-            {/* I want to insert the "guess" question here. */}
             <div>
-              <label className={labelClassName}>Please enter your best guess of the average amount of tokens contributed in the previous round across all 20 players currently playing the game.</label>
+              <label className={labelClassName}>Please enter your best guess of the average amount of tokens contributed in the previous round across all {player.get("sizeOfNetwork")} players currently playing the game.</label>
               <input
                 type="text"
                 value={guess}
@@ -95,7 +95,6 @@ export function ExitSurvey({ next }) {
             </div>
 
             <div className="space-y-8 mt-6">
-              {/* New questions added dynamically */}
               {names.map(name => (
                 <div key={name}>
                   <label className={labelClassName}>{`Would you like to play with ${name} again?`}</label>
@@ -114,9 +113,8 @@ export function ExitSurvey({ next }) {
                 </div>
               ))}
             </div>
-            <br></br>
-            <p>Copy completion code <strong>C1JXRERM</strong>. Click the "Submit" button, then paste the code into Prolific.</p>
-            <br></br>
+            {mandatoryMessage && <span style={{ color: "red" }}>{mandatoryMessage}</span>}
+            <br />
             <div className="mb-12">
               <Button type="submit">Submit</Button>
             </div>

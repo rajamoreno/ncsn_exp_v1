@@ -65,7 +65,7 @@ export function Result() {
             <br />
             <p>You received {player.round.get("roundWinnings")} token(s) from the collective pot. <strong>You now have a total of {player.get("score")} token(s).</strong></p>
             <br />
-            <p>Before proceeding to the next round, please enter your best guess of the <i>average</i> amount of tokens contributed in the previous round <i>across all 20 players</i> currently playing the game.</p>
+            <p>Before proceeding to the next round, please enter your best guess of the <i>average</i> amount of tokens contributed in the previous round <i>across all {player.get("sizeOfNetwork")} players</i> currently playing the game.</p>
             <input 
                 type="text"
                 value={guess}
