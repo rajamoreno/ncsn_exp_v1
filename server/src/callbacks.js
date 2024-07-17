@@ -218,8 +218,8 @@ Empirica.onGameStart(({ game }) => {
   // we populate the matrices now.
   for (let i = 0; i < len; i++) {
     for (let j = 0; j < len; j++) {
-      probMeet[i][j] = acrophily * Math.pow(((peopleTraitA[i] + peopleTraitA[j])/2), 2) + (1 - acrophily) * Math.pow(((peopleTraitB[i] + peopleTraitB[j])/2), 2);
-      probLike[i][j] = homophily * ((1 - Math.abs(peopleTraitA[i] - peopleTraitA[j]))/2) + (1 - homophily) * ((1 - Math.abs(peopleTraitB[i] - peopleTraitB[j]))/2);
+      probMeet[i][j] = acrophily * ((peopleTraitA[i] + peopleTraitA[j])/2) + (1 - acrophily) * ((peopleTraitB[i] + peopleTraitB[j])/2);
+      probLike[i][j] = homophily * (1 - Math.abs(peopleTraitA[i] - peopleTraitA[j])) + (1 - homophily) * (1 - Math.abs(peopleTraitB[i] - peopleTraitB[j]));
       // console.log("probMeet[", i, "][", j, "]: ", probMeet[i][j]);
       // console.log("probLike[", i, "][", j, "]: ", probLike[i][j]);
       let r1 = Math.random();
