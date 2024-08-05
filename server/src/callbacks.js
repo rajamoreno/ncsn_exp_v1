@@ -254,30 +254,43 @@ Empirica.onGameStart(({ game }) => {
   }
 
   // this code takes participants who didn't match with anyone during network assignment (e.g., all zeros in their row) 
-  // and assigns them to a random other participant that IS NOT themselves
+  // and assigns them to a random other participant that ALREADY matched with at least one other participant
+  // e.g. we partition the participants into those who made connections and those who did not.
+  // then for all of those who did not, we randomly assign them a new connection among those who did
   for (let i = 0; i < len; i++) {
+
     let degree = 0;
     for (let j = 0; j < len; j++) {
       if (network[i][j] == 1) {
         degree++;
       }
     }
+
     if (degree == 0) { // this is where we want to randomly assort the degree-0 participant to another one
-      console.log(players[i].get("animalName"), " didn't connect with any other players. We now randomly select a connection for them.")
-      players[i].set("hadToRandomlyAssignConnection", "YES")
+      console.log(players[i].get("animalName"), " didn't connect with any other players. We will randomly select a connection for them.")
+      players[i].set("haveToRandomlyAssignConnection", "YES")
+    } else {
+      players[i].set("haveToRandomlyAssignConnection", "NO")
+    }
+
+  }
+
+  for (let i = 0; i < len; i++) {
+    if (players[i].get("haveToRandomlyAssignConnection") === "YES") {
       const arrayOfOtherParticipants = [];
       for (let k = 0; k < len; k++) {
-        if (k !== i) {
+        if (k !== i && players[k].get("haveToRandomlyAssignConnection") === "NO") {
           arrayOfOtherParticipants.push(k); // this should add only the indices of OTHER participants
+          console.log(players[k].get("animalName"), " is eligible for connection to ", players[i].get("animalName"))
         }
       }
       newConnection = sample(arrayOfOtherParticipants, 1)[0];
       network[i][newConnection] = 1
       network[newConnection][i] = 1 // to preserve the symmetry of the network
-    } else {
-      players[i].set("hadToRandomlyAssignConnection", "NO")
     }
   }
+
+
 
   // now we set the network as an attribute of the game so we can access it everywhere
   game.set("network", network);
