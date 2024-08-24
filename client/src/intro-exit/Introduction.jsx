@@ -15,7 +15,6 @@ export function Introduction({ next }) {
     console.log("Player Pressed Button: ", generosity);
     // sets this as the player's most recent contribution 
     player.set("lastContribution", generosity);
-
     console.log("player.get('lastContribution'): ", player.get("lastContribution"))
     // we now scale the player's contribution to their traitA parameter like so:
     //  0   -> 0.1

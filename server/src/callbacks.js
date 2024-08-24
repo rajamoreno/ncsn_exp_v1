@@ -33,6 +33,11 @@ Empirica.onGameStart(({ game }) => {
   console.log("Successfully calculated number of players...");
   console.log("Number of players: ", len);
 
+  if (len == 1) {
+    console.log("Do not play this game single-player.")
+    return;
+  }
+
   // array of 100 wild animal names for anonymous player identification.
   // note that this implies you should *NEVER* play this game with more than 100 people.
   const wildAnimals = [
@@ -150,7 +155,7 @@ Empirica.onGameStart(({ game }) => {
     players[i].set("animalName", wildAnimals[i]);
     console.log("Successfully set ", wildAnimals[i], " as the animal name of player ", i, "...");
     // IMPORTANT: the default contribution amount is set to 50 if a player fails to submit the introduction stage, but THIS IS MUTABLE
-    const lastContribution = players[i].get("lastContribution") || 50;
+    const lastContribution = players[i].get("lastContribution") !== undefined ? players[i].get("lastContribution") : 50; // make this undefined instead of falsy
     players[i].set("lastContribution", lastContribution);
     players[i].set("sizeOfNetwork", len)
   }
@@ -167,21 +172,29 @@ Empirica.onGameStart(({ game }) => {
   var peopleTraitA = [];
   for (let i = 0; i < len; i+=1) {
     peopleTraitA[i] = players[i].get("traitA");
+    // the below if statement is now unnecessary; user input of 0 is mapped to 0.1 in Introduction.jsx
     // if that value equals 0, we let it equal 1 to avoid isolation in the network
-    if (peopleTraitA[i] == 0) {
-      peopleTraitA[i] = 1;
-    }
-
+    // if (peopleTraitA[i] == 0) {
+    //   peopleTraitA[i] = 1;
+    // }
   }
+
+  console.log("peopleTraitA: ", peopleTraitA)
 
   // console.log("peopleTraitA: ", peopleTraitA);
   // we select trait b from a random permutation of the array for trait a
   var peopleTraitB = shuffle(peopleTraitA);
   // console.log("peopleTraitB: ", peopleTraitB);
 
+  console.log("peopleTraitB: ", peopleTraitB)
+
   // we now set values for homophily and acrophily
-  var homophily = treatment.homophily;
-  var acrophily = treatment.acrophily;
+  var homophily = treatment.homophily !== undefined ? treatment.homophily : 0.0;
+  console.log("homophily: ", homophily)
+  console.log(typeof homophily)
+  var acrophily = treatment.acrophily !== undefined ? treatment.acrophily : 0.0;
+  console.log("acrophily: ", acrophily)
+  console.log(typeof acrophily)
   var network = [];
 
   // we construct a matrix to hold the probability person i
@@ -232,6 +245,9 @@ Empirica.onGameStart(({ game }) => {
     }
   }
 
+  // console.log("probMeet: ", probMeet)
+  // console.log("probLike: ", probLike)
+
   // we set all the diagonal entries equal to 0 so we can filter opponents more easily
   for (let i = 0; i < len; i++) {
     for (let j = 0; j < len; j++) {
@@ -244,7 +260,6 @@ Empirica.onGameStart(({ game }) => {
   // this is an extra step to make the network symmetric (e.g. network[i][j] = network[j][i])
   // I didn't want to remove the prior asymmetrical construction before we ship this in case
   // we need to revert to asymmetry.
-
   for (let i = 0; i < len; i++) {
     for (let j = 0; j < len; j++) {
       if (i > j) {
@@ -257,52 +272,88 @@ Empirica.onGameStart(({ game }) => {
   // and assigns them to a random other participant that ALREADY matched with at least one other participant
   // e.g. we partition the participants into those who made connections and those who did not.
   // then for all of those who did not, we randomly assign them a new connection among those who did
-  for (let i = 0; i < len; i++) {
+  // there are two exceptions:
+  // (1) if there are only 2 players in the network, they just get paired together, no questions asked
+  // (2) if absolutely nobody gets matched probabilistically, everyone gets assigned two random connections 
 
-    let degree = 0;
-    for (let j = 0; j < len; j++) {
-      if (network[i][j] == 1) {
-        degree++;
-      }
-    }
+  if (len == 2) {
 
-    if (degree == 0) { // this is where we want to randomly assort the degree-0 participant to another one
-      console.log(players[i].get("animalName"), " didn't connect with any other players. We will randomly select a connection for them.")
-      players[i].set("haveToRandomlyAssignConnection", "YES")
-    } else {
-      players[i].set("haveToRandomlyAssignConnection", "NO")
-    }
+    console.log("Only two participants present. Automatically connecting them now.")
+    network[0][1] = 1
+    network[1][0] = 1
 
-  }
+  } else {
 
-  for (let i = 0; i < len; i++) {
-    if (players[i].get("haveToRandomlyAssignConnection") === "YES") {
-      const arrayOfOtherParticipants = [];
-      for (let k = 0; k < len; k++) {
-        if (k !== i && players[k].get("haveToRandomlyAssignConnection") === "NO") {
-          arrayOfOtherParticipants.push(k); // this should add only the indices of OTHER participants
-          console.log(players[k].get("animalName"), " is eligible for connection to ", players[i].get("animalName"))
+    oneConnectionExists = false;
+    game.set("oneConnectionExists", oneConnectionExists)
+
+    for (let i = 0; i < len; i++) {
+      let degree = 0;
+      for (let j = 0; j < len; j++) {
+        if (network[i][j] == 1) {
+          degree++;
         }
       }
-      newConnection = sample(arrayOfOtherParticipants, 1)[0];
-      network[i][newConnection] = 1
-      network[newConnection][i] = 1 // to preserve the symmetry of the network
+      if (degree == 0) { // this is where we want to randomly assort the degree-0 participant to another one
+        console.log(players[i].get("animalName"), " didn't connect with any other players. We will randomly select a connection for them.");
+        players[i].set("haveToRandomlyAssignConnection", "YES");
+      } else {
+        players[i].set("haveToRandomlyAssignConnection", "NO");
+        oneConnectionExists = true;
+        game.set("oneConnectionExists", oneConnectionExists)
+      }
+    }
+  
+    if (oneConnectionExists)  { // we pursue the subset approach
+      console.log("At least one connection made. Pursuing the subset approach to choosing new connections for non-connected participants.")
+      game.set("oneConnectionExists", oneConnectionExists)
+      for (let i = 0; i < len; i++) {
+        if (players[i].get("haveToRandomlyAssignConnection") === "YES") {
+          const arrayOfOtherParticipants = [];
+          for (let k = 0; k < len; k++) {
+            if (k !== i && players[k].get("haveToRandomlyAssignConnection") === "NO") { // THIS LINE MAKES ONLY PREVIOUSLY-CONNECTED PARTICIPANTS INTO VALID CANDIDATES FOR FURTHER CONNECTION
+            // if (k !== i) { // THIS LINE MAKES ALL OTHER PARTICIPANTS VALID CANDIDATES FOR FURTHER CONNECTION
+              arrayOfOtherParticipants.push(k); // this should add only the indices of OTHER participants
+              console.log(players[k].get("animalName"), " is eligible for connection to ", players[i].get("animalName"))
+            }
+          }
+          newConnection = sample(arrayOfOtherParticipants, 1)[0];
+          network[i][newConnection] = 1
+          network[newConnection][i] = 1 // to preserve the symmetry of the network
+        }
+      }
+    } else { // randomly choose two other connections for each participant
+      console.log("No connections made. Randomly choosing two connections for every participant.")
+      for (let i = 0; i < len; i++) {
+        const arrayOfOtherParticipants = [];
+        for (let k = 0; k < len; k++) {
+          if (k !== i) {
+            arrayOfOtherParticipants.push(k); // this should add only the indices of OTHER participants
+            console.log(players[k].get("animalName"), " is eligible for connection to ", players[i].get("animalName"))
+          }
+        }
+        newConnections = sample(arrayOfOtherParticipants, 2)
+        newConnection0 = newConnections[0];
+        network[i][newConnection0] = 1
+        network[newConnection0][i] = 1 // to preserve the symmetry of the network
+        newConnection1 = newConnections[1];
+        network[i][newConnection1] = 1
+        network[newConnection1][i] = 1
+      }
     }
   }
-
-
 
   // now we set the network as an attribute of the game so we can access it everywhere
   game.set("network", network);
 
   // checking we stored it correctly
-  networkCheck = game.get("network");
+  // networkCheck = game.get("network");
 
   // comparison:
   console.log("network:");
   console.log(network);
-  console.log("networkCheck:");
-  console.log(networkCheck);
+  // console.log("networkCheck:");
+  // console.log(networkCheck);
 
   // now, we want to make sure the opponent animal names list is populated 
 
